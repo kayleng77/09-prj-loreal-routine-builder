@@ -5,6 +5,14 @@ const selectedProductsList = document.getElementById("selectedProductsList");
 const chatForm = document.getElementById("chatForm");
 const chatWindow = document.getElementById("chatWindow");
 
+// Modal elements
+const imageModal = document.getElementById("imageModal");
+const modalCloseButton = document.getElementById("modalCloseButton");
+const modalMedia = document.getElementById("modalMedia");
+const modalBrand = document.getElementById("modalBrand");
+const modalName = document.getElementById("modalName");
+const modalDescription = document.getElementById("modalDescription");
+
 const selectedProducts = [];
 
 /* Show initial placeholder until user selects a category */
@@ -13,6 +21,17 @@ productsContainer.innerHTML = `
     Select a category to view products
   </div>
 `;
+
+modalCloseButton.addEventListener("click", () => {
+  imageModal.close();
+});
+
+imageModal.addEventListener("click", event => {
+  if (event.target === imageModal) {
+    imageModal.close();
+  }
+});
+
 
 /* Load product data from JSON file */
 async function loadProducts() {
@@ -41,7 +60,7 @@ function displayProducts(products) {
           <div class="product-info">
             <h3>${product.name}</h3>
             <p>${product.brand}</p>
-            <button id="productModal" class="productModal">
+            <button id="modalButton" class="modal-button">
               Learn More
             </button>
           </div>
@@ -58,8 +77,16 @@ function displayProducts(products) {
     // Add click event listener to select the product when the card is clicked
     productCard.addEventListener("click", (event) => {
       // prevent toggling if the click is on the "Learn More" button
-      if (event.target.closest(".productModal")) {
-        return;
+      if (event.target.closest(".modal-button")) {
+        modalMedia.innerHTML = `<img src="${product.image}" alt="${product.name}">`;
+        
+        modalBrand.textContent = product.brand;
+        modalName.textContent = product.name;
+        modalDescription.textContent = product.description;
+        imageModal.showModal();
+
+        productCard.setAttribute("aria-haspopup", "dialog"); // Indicate that the card opens a modal when activated
+        productCard.setAttribute("aria-controls", "imageModal"); // Indicate that the card controls the image modal
       }
       toggleProductSelection(product, productCard);
     });
