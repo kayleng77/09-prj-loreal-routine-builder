@@ -14,8 +14,6 @@ productsContainer.innerHTML = `
   </div>
 `;
 
-
-
 /* Load product data from JSON file */
 async function loadProducts() {
   const response = await fetch("products.json");
@@ -63,7 +61,7 @@ function displayProducts(products) {
       if (event.target.closest(".productModal")) {
         return;
       }
-      addProductSelection(product, productCard);
+      toggleProductSelection(product, productCard);
     });
 
   });
@@ -77,16 +75,17 @@ function findSelectedIndex(product) {
   return selectedProducts.findIndex((selectedProduct) => selectedProduct.id === product.id);
 }
 
-/* Add a product and keep the card and selected list in sync */
-function addProductSelection(product, productCard) {
+function toggleProductSelection(product, productCard) {
   const selectedIndex = findSelectedIndex(product);
 
   if (selectedIndex === -1) {
     selectedProducts.push(product);
+  } else {
+    selectedProducts.splice(selectedIndex, 1);
   }
 
-  productCard.classList.add("selected");
-  productCard.setAttribute("aria-pressed", "true");
+  productCard.classList.toggle("selected");
+  productCard.setAttribute("aria-pressed", selectedIndex === -1);
   displaySelectedProducts();
 }
 
