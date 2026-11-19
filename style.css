@@ -79,6 +79,7 @@ body {
   overflow-y: auto;
   background: #fafafa;
   margin-bottom: 20px;
+  white-space: pre-wrap;
 }
 
 /* placeholder message */

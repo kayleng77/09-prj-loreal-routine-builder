@@ -4,6 +4,8 @@ const productsContainer = document.getElementById("productsContainer");
 const selectedProductsList = document.getElementById("selectedProductsList");
 const chatForm = document.getElementById("chatForm");
 const chatWindow = document.getElementById("chatWindow");
+const generateRoutineButton = document.getElementById("generateRoutine");
+const userInput = document.getElementById("userInput");
 
 // Modal elements
 const imageModal = document.getElementById("imageModal");
@@ -14,6 +16,23 @@ const modalName = document.getElementById("modalName");
 const modalDescription = document.getElementById("modalDescription");
 
 const selectedProducts = [];
+let messages = [
+  {role: 'system', content: `You are a helpful assistant that provides beauty routine recommendations based on the users selected products. 
+    
+    Be concise and provide a step-by-step routine for the user. 
+    
+    If the user has not selected any products, ask them to select products first. 
+
+    If the user only selects one product, provide a routine that incorporates that product.
+    
+    Put the routine in a numbered list format so it's easy to follow. Add newlines between each step for clarity.
+    
+    Don't use ***. Use emojis to make the routine more engaging.
+
+    If the user query is not related to beauty routines, politely inform them that you can only provide beauty routine recommendations based on the selected products.`}
+];
+
+const workerUrl = 'https://wispy-unit.kayleng77.workers.dev/';
 
 /* Show initial placeholder until user selects a category */
 productsContainer.innerHTML = `
@@ -87,6 +106,8 @@ function displayProducts(products) {
 
         productCard.setAttribute("aria-haspopup", "dialog"); // Indicate that the card opens a modal when activated
         productCard.setAttribute("aria-controls", "imageModal"); // Indicate that the card controls the image modal
+
+        return; // Exit to prevent toggling selection
       }
       toggleProductSelection(product, productCard);
     });
@@ -177,11 +198,62 @@ categoryFilter.addEventListener("change", async (e) => {
   displayProducts(filteredProducts);
 });
 
+generateRoutineButton.addEventListener("click", async (e) => {
+  e.preventDefault();
+  console.log("Selected products:", selectedProducts);
+  chatWindow.innerHTML = "✨ Your beauty routine is being generated ...";
+  messages.push({role: 'user', content:`${selectedProducts.map(p => p.name).join(', ')}`});
 
+  try {
+    const response = await fetch(workerUrl, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json',},
+        body: JSON.stringify({messages: messages,}),
+        
+      });
+
+    if (!response.ok) {
+      throw new Error(`Response failed. Status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    const assistantMessage = data.choices[0].message.content;
+    messages.push({role: 'assistant', content: assistantMessage});
+    console.log("Assistant message:", assistantMessage);
+    chatWindow.textContent = assistantMessage;
+
+  } catch (error) {
+    console.error("Error generating routine:", error);
+  }
+});
 
 /* Chat form submission handler - placeholder for OpenAI integration */
-chatForm.addEventListener("submit", (e) => {
+chatForm.addEventListener("submit", async (e) => {
   e.preventDefault();
 
   chatWindow.innerHTML = "Connect to the OpenAI API for a response!";
+  messages.push({role: 'user', content: userInput.value});
+
+  try {
+    const response = await fetch(workerUrl, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json',},
+        body: JSON.stringify({messages: messages,}),
+      });
+    if(!response.ok) {
+      throw new Error(`Response failed. Status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    const assistantMessage = data.choices[0].message.content;
+    messages.push({role: 'assistant', content: assistantMessage});
+    console.log("Assistant message:", assistantMessage);
+    chatWindow.textContent = assistantMessage;
+
+  } catch (error) {
+    console.error("Error generating routine:", error);
+  }
+  finally {
+    userInput.value = "";
+  }
 });
