@@ -125,6 +125,7 @@ body {
   justify-content: center;
   cursor: pointer;
   transition: background 0.3s;
+  border-radius: 8px;
 }
 
 .chat-form button:hover {
@@ -230,7 +231,7 @@ body {
 
 /* modal styles */
 .image-modal {
-  width: 75%;
+  width: 50%;
   height: 70%;
   margin: auto;
   padding: 0;
@@ -272,6 +273,7 @@ body {
   max-height: 300px;
   object-fit: contain;
   align-self: center;
+  margin-top: 20px;
 }
 
 .modal-content {
@@ -294,6 +296,16 @@ body {
 
 .modal-button:hover {
   background: #d6d6d6;
+}
+
+#modalName {
+  color: #000;  
+  margin-bottom: 10px;
+}
+
+#modalBrand {
+  color: #666;
+  
 }
 
 
@@ -350,4 +362,20 @@ body {
 
 .generate-btn i {
   margin-right: 8px;
+}
+
+@media (max-width: 768px) {
+  .product-card {
+    flex: 0 1 calc(50% - 10px);
+  }
+
+  .image-modal {
+    width: 70%;
+    height: 70%;
+  
+  }
+
+  .image-modal img {
+    max-height: 200px;
+  }
 }

@@ -25,11 +25,13 @@ let messages = [
 
     If the user only selects one product, provide a routine that incorporates that product.
     
-    Put the routine in a numbered list format so it's easy to follow. Add newlines between each step for clarity.
+    Put the routine in a numbered list format so it's easy to follow. 
     
-    Don't use ***. Use emojis to make the routine more engaging.
+    Use emojis to make the routine more engaging.
 
-    If the user query is not related to beauty routines, politely inform them that you can only provide beauty routine recommendations based on the selected products.`}
+    You can recommend additional products that complement the user's selected products, but make sure to explain why they are recommended.
+
+    If the user query is not related to skincare, haircare, makeup, fragrance, and other related areas, politely inform them that you can only provide beauty routine recommendations based on the selected products.`}
 ];
 
 const workerUrl = 'https://wispy-unit.kayleng77.workers.dev/';
@@ -57,6 +59,29 @@ async function loadProducts() {
   const response = await fetch("products.json");
   const data = await response.json();
   return data.products;
+}
+
+function displayAssistantMessage(message) {
+  const linkPattern = /\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g;
+  let lastIndex = 0;
+  let match;
+
+  chatWindow.replaceChildren();
+
+  while ((match = linkPattern.exec(message)) !== null) {
+    chatWindow.append(document.createTextNode(message.slice(lastIndex, match.index)));
+
+    const link = document.createElement("a");
+    link.href = match[2];
+    link.textContent = match[1];
+    link.target = "_blank";
+    link.rel = "noopener noreferrer";
+    chatWindow.append(link);
+
+    lastIndex = linkPattern.lastIndex;
+  }
+
+  chatWindow.append(document.createTextNode(message.slice(lastIndex)));
 }
 
 function selectionChecker(selectedProduct) {
@@ -135,6 +160,7 @@ function toggleProductSelection(product, productCard) {
   productCard.classList.toggle("selected");
   productCard.setAttribute("aria-pressed", selectedIndex === -1);
   displaySelectedProducts();
+  saveSelectedProducts();
 }
 
 /* Show the products currently in the user's routine */
@@ -182,7 +208,7 @@ selectedProductsList.addEventListener("click", (event) => {
   displaySelectedProducts();
 });
 
-displaySelectedProducts();
+loadSelectedProducts(); // Load selected products from localStorage on page load
 
 /* Filter and display products when category changes */
 categoryFilter.addEventListener("change", async (e) => {
@@ -220,7 +246,7 @@ generateRoutineButton.addEventListener("click", async (e) => {
     const assistantMessage = data.choices[0].message.content;
     messages.push({role: 'assistant', content: assistantMessage});
     console.log("Assistant message:", assistantMessage);
-    chatWindow.textContent = assistantMessage;
+    displayAssistantMessage(assistantMessage);
 
   } catch (error) {
     console.error("Error generating routine:", error);
@@ -231,7 +257,7 @@ generateRoutineButton.addEventListener("click", async (e) => {
 chatForm.addEventListener("submit", async (e) => {
   e.preventDefault();
 
-  chatWindow.innerHTML = "Connect to the OpenAI API for a response!";
+  chatWindow.innerHTML = "✨ Your beauty advisor is thinking ...";
   messages.push({role: 'user', content: userInput.value});
 
   try {
@@ -246,9 +272,9 @@ chatForm.addEventListener("submit", async (e) => {
 
     const data = await response.json();
     const assistantMessage = data.choices[0].message.content;
-    messages.push({role: 'assistant', content: assistantMessage});
+    messages.push({role: 'assistant', content: assistantMessage}); 
     console.log("Assistant message:", assistantMessage);
-    chatWindow.textContent = assistantMessage;
+    displayAssistantMessage(assistantMessage);
 
   } catch (error) {
     console.error("Error generating routine:", error);
@@ -257,3 +283,16 @@ chatForm.addEventListener("submit", async (e) => {
     userInput.value = "";
   }
 });
+
+function saveSelectedProducts() {
+  localStorage.setItem("selectedProducts", JSON.stringify(selectedProducts));
+}
+
+function loadSelectedProducts() {
+  const savedProducts = localStorage.getItem("selectedProducts");
+  if (savedProducts) {
+    const parsedProducts = JSON.parse(savedProducts);
+    selectedProducts.push(...parsedProducts);
+    displaySelectedProducts();
+  }
+}
