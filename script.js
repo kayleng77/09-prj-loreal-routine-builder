@@ -53,6 +53,14 @@ imageModal.addEventListener("click", event => {
   }
 });
 
+function findProductId(products, productId) {
+  return products.find((item) => String(item.id) === productId);
+}
+
+function findSelectedIndex(product) {
+  return selectedProducts.findIndex((selectedProduct) => selectedProduct.id === product.id);
+}
+
 
 /* Load product data from JSON file */
 async function loadProducts() {
@@ -140,14 +148,6 @@ function displayProducts(products) {
   });
 }
 
-function findProductId(products, productId) {
-  return products.find((item) => String(item.id) === productId);
-}
-
-function findSelectedIndex(product) {
-  return selectedProducts.findIndex((selectedProduct) => selectedProduct.id === product.id);
-}
-
 function toggleProductSelection(product, productCard) {
   const selectedIndex = findSelectedIndex(product);
 
@@ -199,6 +199,7 @@ selectedProductsList.addEventListener("click", (event) => {
   }
 
   selectedProducts.splice(selectedIndex, 1);
+  
   productsContainer.querySelectorAll(".product-card").forEach((productCard) => {
     if (productCard.dataset.productId === productId) {
       productCard.classList.remove("selected");
@@ -224,6 +225,7 @@ categoryFilter.addEventListener("change", async (e) => {
   displayProducts(filteredProducts);
 });
 
+/* Generate routine button handler */
 generateRoutineButton.addEventListener("click", async (e) => {
   e.preventDefault();
   console.log("Selected products:", selectedProducts);
@@ -284,6 +286,8 @@ chatForm.addEventListener("submit", async (e) => {
   }
 });
 
+
+/* Save selected products to local storage */
 function saveSelectedProducts() {
   localStorage.setItem("selectedProducts", JSON.stringify(selectedProducts));
 }
